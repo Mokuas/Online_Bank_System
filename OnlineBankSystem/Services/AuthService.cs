@@ -1,47 +1,61 @@
-﻿using OnlineBankSystem.Data;
-using OnlineBankSystem.Entities;
-using Microsoft.EntityFrameworkCore;
+﻿using OnlineBankSystem.Entities;
 using OnlineBankSystem.Dtos;
+using OnlineBankSystem.Repositories;
+using Microsoft.AspNetCore.Identity;
 
 namespace OnlineBankSystem.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly OnlineBankDbContext _context;
+        private readonly IUserRepository _userRepository;           
+        private readonly IPasswordHasher<User> _passwordHasher;
 
-        public AuthService(OnlineBankDbContext context)
+        public AuthService(IUserRepository userRepository, IPasswordHasher<User> passwordHasher)
         {
-            _context = context;
+            _userRepository = userRepository;                      
+            _passwordHasher = passwordHasher;                       
         }
 
         public async Task<bool> RegisterAsync(RegisterRequest request)
         {
-            // Email var mı?
-            bool exists = await _context.Users.AnyAsync(u => u.Email == request.Email);
-            if (exists) return false;
+
+            if (await _userRepository.EmailExistsAsync(request.Email))
+                return false;
 
             var user = new User
             {
                 Email = request.Email,
-                PasswordHash = request.Password // Not secure – JWT ekleyince hash yapacağız
+                Role = "Customer",
+                IsActive = true
             };
 
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
+
+            await _userRepository.AddAsync(user);
+            await _userRepository.SaveChangesAsync();
 
             return true;
         }
 
         public async Task<bool> LoginAsync(LoginRequest request)
         {
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Email == request.Email);
 
-            if (user == null) return false;
+            var user = await _userRepository.GetByEmailAsync(request.Email);
 
-            if (user.PasswordHash != request.Password) return false;
+            if (user == null)
+                return false;
 
-            return true;
+            if (!user.IsActive) 
+                return false;
+
+            var verificationResult = _passwordHasher.VerifyHashedPassword(
+                user,
+                user.PasswordHash,
+                request.Password
+            );
+
+            return verificationResult == PasswordVerificationResult.Success;
         }
+
     }
 }
