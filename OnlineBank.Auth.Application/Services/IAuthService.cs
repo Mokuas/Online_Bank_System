@@ -1,6 +1,6 @@
-﻿namespace OnlineBankSystem.Services
+﻿namespace OnlineBank.Auth.Application.Services
 {
-    using OnlineBankSystem.Dtos;
+    using OnlineBank.Auth.Application.Dtos;
 
     public interface IAuthService
     {

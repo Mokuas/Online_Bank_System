@@ -1,9 +1,9 @@
-﻿using OnlineBankSystem.Entities;
-using OnlineBankSystem.Dtos;
-using OnlineBankSystem.Repositories;
+﻿using OnlineBank.Auth.Domain.Entities;
+using OnlineBank.Auth.Application.Dtos;
+using OnlineBank.Auth.Application.Repositories;
 using Microsoft.AspNetCore.Identity;
 
-namespace OnlineBankSystem.Services
+namespace OnlineBank.Auth.Application.Services
 {
     public class AuthService : IAuthService
     {
