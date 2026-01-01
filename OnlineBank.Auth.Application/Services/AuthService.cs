@@ -2,6 +2,7 @@
 using OnlineBank.Auth.Application.Repositories;
 using OnlineBank.Auth.Application.Security;
 using OnlineBank.Auth.Domain.Entities;
+using OnlineBank.Auth.Application.Common;
 
 namespace OnlineBank.Auth.Application.Services
 {
@@ -16,10 +17,10 @@ namespace OnlineBank.Auth.Application.Services
             _passwordHasher = passwordHasher;
         }
 
-        public async Task<bool> RegisterAsync(RegisterRequest request)
+        public async Task<Result> RegisterAsync(RegisterRequest request)
         {
             if (await _userRepository.EmailExistsAsync(request.Email))
-                return false;
+                return Result.Failure("Email already exists.");
 
             var user = new User
             {
@@ -33,16 +34,20 @@ namespace OnlineBank.Auth.Application.Services
             await _userRepository.AddAsync(user);
             await _userRepository.SaveChangesAsync();
 
-            return true;
+            return Result.Success();
         }
 
-        public async Task<bool> LoginAsync(LoginRequest request)
+        public async Task<Result> LoginAsync(LoginRequest request)
         {
             var user = await _userRepository.GetByEmailAsync(request.Email);
-            if (user == null) return false;
-            if (!user.IsActive) return false;
+            if (user == null)
+                return Result.Failure("Invalid email or password.");
 
-            return _passwordHasher.Verify(request.Password, user.PasswordHash);
+            if (!user.IsActive)
+                return Result.Failure("User is inactive.");
+
+            bool ok = _passwordHasher.Verify(request.Password, user.PasswordHash);
+            return ok ? Result.Success() : Result.Failure("Invalid email or password.");
         }
     }
 }

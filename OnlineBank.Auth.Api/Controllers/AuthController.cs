@@ -6,21 +6,16 @@ namespace OnlineBank.Auth.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController : ControllerBase
+    public class AuthController(IAuthService authService) : ControllerBase
     {
-        private readonly IAuthService _authService;
-
-        public AuthController(IAuthService authService)
-        {
-            _authService = authService;
-        }
+        private readonly IAuthService _authService = authService;
 
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterRequest request)
         {
-            bool result = await _authService.RegisterAsync(request);
-            if (!result)
-                return BadRequest("Email already exists.");
+            var result = await _authService.RegisterAsync(request);
+            if (!result.IsSuccess)
+                return BadRequest(result.Error);
 
             return Ok("User registered successfully.");
         }
@@ -28,9 +23,9 @@ namespace OnlineBank.Auth.Api.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginRequest request)
         {
-            bool result = await _authService.LoginAsync(request);
-            if (!result)
-                return Unauthorized("Invalid email or password.");
+            var result = await _authService.LoginAsync(request);
+            if (!result.IsSuccess)
+                return Unauthorized(result.Error);
 
             return Ok("Login successful.");
         }
