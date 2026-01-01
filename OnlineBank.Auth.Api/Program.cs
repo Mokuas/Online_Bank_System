@@ -6,6 +6,8 @@ using OnlineBank.Auth.Application.Repositories;
 using OnlineBank.Auth.Application.Services;
 using OnlineBank.Auth.Domain.Entities;
 using Scalar.AspNetCore;
+using OnlineBank.Auth.Application.Security;
+using OnlineBank.Auth.Infrastructure.Security;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,8 +16,9 @@ builder.Services.AddDbContext<OnlineBankDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPasswordHasher, Pbkdf2PasswordHasher>();
+
 
 // Add services to the container.
 

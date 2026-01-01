@@ -1,24 +1,23 @@
-﻿using OnlineBank.Auth.Domain.Entities;
-using OnlineBank.Auth.Application.Dtos;
+﻿using OnlineBank.Auth.Application.Dtos;
 using OnlineBank.Auth.Application.Repositories;
-using Microsoft.AspNetCore.Identity;
+using OnlineBank.Auth.Application.Security;
+using OnlineBank.Auth.Domain.Entities;
 
 namespace OnlineBank.Auth.Application.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly IUserRepository _userRepository;           
-        private readonly IPasswordHasher<User> _passwordHasher;
+        private readonly IUserRepository _userRepository;
+        private readonly IPasswordHasher _passwordHasher;
 
-        public AuthService(IUserRepository userRepository, IPasswordHasher<User> passwordHasher)
+        public AuthService(IUserRepository userRepository, IPasswordHasher passwordHasher)
         {
-            _userRepository = userRepository;                      
-            _passwordHasher = passwordHasher;                       
+            _userRepository = userRepository;
+            _passwordHasher = passwordHasher;
         }
 
         public async Task<bool> RegisterAsync(RegisterRequest request)
         {
-
             if (await _userRepository.EmailExistsAsync(request.Email))
                 return false;
 
@@ -29,7 +28,7 @@ namespace OnlineBank.Auth.Application.Services
                 IsActive = true
             };
 
-            user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
+            user.PasswordHash = _passwordHasher.Hash(request.Password);
 
             await _userRepository.AddAsync(user);
             await _userRepository.SaveChangesAsync();
@@ -39,23 +38,11 @@ namespace OnlineBank.Auth.Application.Services
 
         public async Task<bool> LoginAsync(LoginRequest request)
         {
-
             var user = await _userRepository.GetByEmailAsync(request.Email);
+            if (user == null) return false;
+            if (!user.IsActive) return false;
 
-            if (user == null)
-                return false;
-
-            if (!user.IsActive) 
-                return false;
-
-            var verificationResult = _passwordHasher.VerifyHashedPassword(
-                user,
-                user.PasswordHash,
-                request.Password
-            );
-
-            return verificationResult == PasswordVerificationResult.Success;
+            return _passwordHasher.Verify(request.Password, user.PasswordHash);
         }
-
     }
 }
