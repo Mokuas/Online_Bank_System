@@ -1,3 +1,7 @@
 <Solution>
+  <Project Path="OnlineBank.Auth.Api/OnlineBank.Auth.Api.csproj" Id="fcf59799-476f-4f88-9078-86a71f1dc4d1" />
+  <Project Path="OnlineBank.Auth.Application/OnlineBank.Auth.Application.csproj" Id="4b4b4374-3656-489d-8005-5c6ba8524fde" />
+  <Project Path="OnlineBank.Auth.Domain/OnlineBank.Auth.Domain.csproj" Id="542c90f9-b32d-4f75-892b-655e55dad355" />
+  <Project Path="OnlineBank.Auth.Infrastructure/OnlineBank.Auth.Infrastructure.csproj" Id="dcb57a0e-7f33-4474-ad07-494dc00dca59" />
   <Project Path="OnlineBankSystem/OnlineBankSystem.csproj" />
 </Solution>

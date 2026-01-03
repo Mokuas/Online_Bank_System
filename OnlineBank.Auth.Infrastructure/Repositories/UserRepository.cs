@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using OnlineBankSystem.Data;
-using OnlineBankSystem.Entities;
+using OnlineBank.Auth.Infrastructure.Data;
+using OnlineBank.Auth.Domain.Entities;
+using OnlineBank.Auth.Application.Repositories;
 
-namespace OnlineBankSystem.Repositories
+
+namespace OnlineBank.Auth.Infrastructure.Repositories
 {
     public class UserRepository : IUserRepository
     {

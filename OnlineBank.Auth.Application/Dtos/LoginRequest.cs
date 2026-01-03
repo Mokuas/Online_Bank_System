@@ -1,6 +1,6 @@
-﻿namespace OnlineBankSystem.Dtos
+﻿namespace OnlineBank.Auth.Application.Dtos
 {
-    public class RegisterRequest
+    public class LoginRequest
     {
         public string Email { get; set; } = null!;
         public string Password { get; set; } = null!;

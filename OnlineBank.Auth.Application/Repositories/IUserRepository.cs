@@ -1,6 +1,6 @@
-﻿using OnlineBankSystem.Entities;
+﻿using OnlineBank.Auth.Domain.Entities;
 
-namespace OnlineBankSystem.Repositories
+namespace OnlineBank.Auth.Application.Repositories
 {
     public interface IUserRepository
     {

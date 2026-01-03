@@ -1,4 +1,4 @@
-﻿namespace OnlineBankSystem.Entities
+﻿namespace OnlineBank.Auth.Domain.Entities
 {
     public class User
     {
