@@ -1,8 +1,4 @@
 ﻿namespace OnlineBank.Auth.Application.Dtos
 {
-    public class LoginRequest
-    {
-        public string Email { get; set; } = null!;
-        public string Password { get; set; } = null!;
-    }
+    public sealed record LoginRequest(string Email, string Password);
 }

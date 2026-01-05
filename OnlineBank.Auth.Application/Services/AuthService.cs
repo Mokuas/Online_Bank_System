@@ -1,8 +1,8 @@
-﻿using OnlineBank.Auth.Application.Dtos;
+﻿using OnlineBank.Auth.Application.Common;
+using OnlineBank.Auth.Application.Dtos;
 using OnlineBank.Auth.Application.Repositories;
 using OnlineBank.Auth.Application.Security;
 using OnlineBank.Auth.Domain.Entities;
-using OnlineBank.Auth.Application.Common;
 
 namespace OnlineBank.Auth.Application.Services
 {
@@ -10,11 +10,13 @@ namespace OnlineBank.Auth.Application.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly IPasswordHasher _passwordHasher;
+        private readonly ITokenService _tokenService;
 
-        public AuthService(IUserRepository userRepository, IPasswordHasher passwordHasher)
+        public AuthService(IUserRepository userRepository, IPasswordHasher passwordHasher, ITokenService tokenService)
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
+            _tokenService = tokenService;
         }
 
         public async Task<Result> RegisterAsync(RegisterRequest request)
@@ -37,17 +39,22 @@ namespace OnlineBank.Auth.Application.Services
             return Result.Success();
         }
 
-        public async Task<Result> LoginAsync(LoginRequest request)
+        public async Task<Result<LoginResponse>> LoginAsync(LoginRequest request)
         {
             var user = await _userRepository.GetByEmailAsync(request.Email);
             if (user == null)
-                return Result.Failure("Invalid email or password.");
+                return Result<LoginResponse>.Failure("Invalid email or password.");
 
             if (!user.IsActive)
-                return Result.Failure("User is inactive.");
+                return Result<LoginResponse>.Failure("User is inactive.");
 
             bool ok = _passwordHasher.Verify(request.Password, user.PasswordHash);
-            return ok ? Result.Success() : Result.Failure("Invalid email or password.");
+            if (!ok)
+                return Result<LoginResponse>.Failure("Invalid email or password.");
+
+            var token = _tokenService.CreateAccessToken(user);
+            return Result<LoginResponse>.Success(new LoginResponse(token));
+
         }
     }
 }
