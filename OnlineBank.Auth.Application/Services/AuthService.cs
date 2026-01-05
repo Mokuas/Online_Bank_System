@@ -53,7 +53,8 @@ namespace OnlineBank.Auth.Application.Services
                 return Result<LoginResponse>.Failure("Invalid email or password.");
 
             var token = _tokenService.CreateAccessToken(user);
-            return Result<LoginResponse>.Success(new LoginResponse { AccessToken = token });
+            return Result<LoginResponse>.Success(new LoginResponse(token));
+
         }
     }
 }

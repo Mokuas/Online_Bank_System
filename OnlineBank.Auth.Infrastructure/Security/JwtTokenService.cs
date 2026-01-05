@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OnlineBank.Auth.Application.Security;
 using OnlineBank.Auth.Domain.Entities;
@@ -12,37 +10,30 @@ namespace OnlineBank.Auth.Infrastructure.Security
 {
     public class JwtTokenService : ITokenService
     {
-        private readonly IConfiguration _config;
+        private readonly JwtOptions _jwt;
 
-        public JwtTokenService(IConfiguration config)
+        public JwtTokenService(IOptions<JwtOptions> options)
         {
-            _config = config;
+            _jwt = options.Value;
         }
 
         public string CreateAccessToken(User user)
         {
-            var jwt = _config.GetSection("Jwt");
-
-            var key = jwt["Key"]!;
-            var issuer = jwt["Issuer"]!;
-            var audience = jwt["Audience"]!;
-            var expiresMinutes = int.Parse(jwt["ExpiresMinutes"]!);
-
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Role, user.Role)
             };
 
-            var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
+            var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.Key));
             var creds = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: issuer,
-                audience: audience,
+                issuer: _jwt.Issuer,
+                audience: _jwt.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(expiresMinutes),
+                expires: DateTime.UtcNow.AddMinutes(_jwt.ExpiresMinutes),
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

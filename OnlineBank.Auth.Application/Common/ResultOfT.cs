@@ -1,5 +1,10 @@
 ﻿namespace OnlineBank.Auth.Application.Common
 {
+    /// <summary>
+    /// Generic result type used for returning either a value on success or an error message on failure.
+    /// This avoids exception-driven flow for expected cases (invalid credentials),
+    /// keeps controller/service logic explicit, and avoids adding an external dependency for a small utility.
+    /// </summary>
     public sealed class Result<T>
     {
         public bool IsSuccess { get; }
