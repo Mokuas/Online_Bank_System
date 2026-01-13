@@ -36,5 +36,18 @@ namespace OnlineBank.Auth.Infrastructure.Repositories
         {
             return _context.SaveChangesAsync();
         }
+
+        public Task<User?> GetByIdAsync(int id)
+        {
+            return _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+        }
+
+        public Task<List<User>> GetAllAsync()
+        {
+            return _context.Users
+                .OrderBy(u => u.Id)
+                .ToListAsync();
+        }
+
     }
 }
