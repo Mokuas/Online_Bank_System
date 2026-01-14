@@ -1,7 +1,15 @@
 <Solution>
-  <Project Path="OnlineBank.Auth.Api/OnlineBank.Auth.Api.csproj" Id="fcf59799-476f-4f88-9078-86a71f1dc4d1" />
-  <Project Path="OnlineBank.Auth.Application/OnlineBank.Auth.Application.csproj" Id="4b4b4374-3656-489d-8005-5c6ba8524fde" />
-  <Project Path="OnlineBank.Auth.Domain/OnlineBank.Auth.Domain.csproj" Id="542c90f9-b32d-4f75-892b-655e55dad355" />
-  <Project Path="OnlineBank.Auth.Infrastructure/OnlineBank.Auth.Infrastructure.csproj" Id="dcb57a0e-7f33-4474-ad07-494dc00dca59" />
+  <Folder Name="/AuthService/">
+    <Project Path="OnlineBank.Auth.Api/OnlineBank.Auth.Api.csproj" Id="fcf59799-476f-4f88-9078-86a71f1dc4d1" />
+    <Project Path="OnlineBank.Auth.Application/OnlineBank.Auth.Application.csproj" Id="4b4b4374-3656-489d-8005-5c6ba8524fde" />
+    <Project Path="OnlineBank.Auth.Domain/OnlineBank.Auth.Domain.csproj" Id="542c90f9-b32d-4f75-892b-655e55dad355" />
+    <Project Path="OnlineBank.Auth.Infrastructure/OnlineBank.Auth.Infrastructure.csproj" Id="dcb57a0e-7f33-4474-ad07-494dc00dca59" />
+  </Folder>
+  <Folder Name="/ProfilesService/">
+    <Project Path="ProfilesService.Api/ProfilesService.Api.csproj" Id="c127d85e-d80c-4273-894d-616a2bfdaf12" />
+    <Project Path="ProfilesService.Application/ProfilesService.Application.csproj" Id="cac58c77-b587-4960-b3e5-26c556f303b9" />
+    <Project Path="ProfilesService.Domain/ProfilesService.Domain.csproj" Id="f0f023b1-a5a4-40ce-9c04-d2b42bb0820e" />
+    <Project Path="ProfilesService.Infrastructure/ProfilesService.Infrastructure.csproj" Id="bbb7a04c-21a8-4aae-a85b-e741e9bd5150" />
+  </Folder>
   <Project Path="OnlineBankSystem/OnlineBankSystem.csproj" />
 </Solution>
