@@ -8,7 +8,7 @@ namespace OnlineBank.Auth.Application.Repositories
         Task<bool> EmailExistsAsync(string email);
         Task AddAsync(User user);
         Task SaveChangesAsync();
-        Task<List<User>> GetAllAsync();
+        Task<IReadOnlyList<User>> GetAllAsync();
         Task<User?> GetByIdAsync(int id);
     }
 }

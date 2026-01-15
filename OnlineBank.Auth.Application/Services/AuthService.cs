@@ -6,18 +6,11 @@ using OnlineBank.Auth.Domain.Entities;
 
 namespace OnlineBank.Auth.Application.Services
 {
-    public class AuthService : IAuthService
+    public class AuthService(IUserRepository userRepository, IPasswordHasher passwordHasher, ITokenService tokenService) : IAuthService
     {
-        private readonly IUserRepository _userRepository;
-        private readonly IPasswordHasher _passwordHasher;
-        private readonly ITokenService _tokenService;
-
-        public AuthService(IUserRepository userRepository, IPasswordHasher passwordHasher, ITokenService tokenService)
-        {
-            _userRepository = userRepository;
-            _passwordHasher = passwordHasher;
-            _tokenService = tokenService;
-        }
+        private readonly IUserRepository _userRepository = userRepository;
+        private readonly IPasswordHasher _passwordHasher = passwordHasher;
+        private readonly ITokenService _tokenService = tokenService;
 
         public async Task<Result> RegisterAsync(RegisterRequest request)
         {

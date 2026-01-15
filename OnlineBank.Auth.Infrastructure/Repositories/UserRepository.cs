@@ -42,9 +42,9 @@ namespace OnlineBank.Auth.Infrastructure.Repositories
             return _context.Users.FirstOrDefaultAsync(u => u.Id == id);
         }
 
-        public Task<List<User>> GetAllAsync()
+        public async Task<IReadOnlyList<User>> GetAllAsync()
         {
-            return _context.Users
+            return await _context.Users
                 .OrderBy(u => u.Id)
                 .ToListAsync();
         }
