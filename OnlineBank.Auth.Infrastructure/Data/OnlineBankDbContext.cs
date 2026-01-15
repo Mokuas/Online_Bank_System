@@ -10,6 +10,8 @@
         }
 
         public DbSet<User> Users { get; set; } = null!;
+        public DbSet<RevokedToken> RevokedTokens { get; set; } = null!;
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -17,6 +19,10 @@
 
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Email)
+                .IsUnique();
+
+            modelBuilder.Entity<RevokedToken>()
+                .HasIndex(rt => rt.Jti)
                 .IsUnique();
         }
     }

@@ -7,5 +7,7 @@ namespace OnlineBank.Auth.Application.Services
     {
         Task<Result> RegisterAsync(RegisterRequest request);
         Task<Result<LoginResponse>> LoginAsync(LoginRequest request);
+        Task<Result<List<AdminUserDto>>> GetUsersAsync();
+        Task<Result> UpdateUserAsync(int id, UpdateUserRequest request);
     }
 }
