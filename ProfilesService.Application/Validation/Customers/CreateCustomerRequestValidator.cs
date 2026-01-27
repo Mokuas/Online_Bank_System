@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using ProfilesService.Application.Dtos.Customers;
+using ProfilesService.Application.Validation.Common;
 
 namespace ProfilesService.Application.Validation.Customers
 {
@@ -25,9 +26,7 @@ namespace ProfilesService.Application.Validation.Customers
                 .MaximumLength(200);
 
             RuleFor(x => x.PhoneNumber)
-                .NotEmpty().WithMessage("PhoneNumber is required.")
-                .Matches(@"^\+?[0-9\s\-]{7,20}$")
-                .WithMessage("PhoneNumber format is invalid.");
+                .ValidPhoneNumber();
 
             RuleFor(x => x.DateOfBirth)
                 .NotEmpty().WithMessage("DateOfBirth is required.");

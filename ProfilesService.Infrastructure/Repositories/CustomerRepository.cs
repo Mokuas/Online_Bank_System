@@ -15,9 +15,23 @@ public sealed class CustomerRepository(ProfilesDbContext db) : ICustomerReposito
         return _db.Customers.FirstOrDefaultAsync(c => c.Id == id);
     }
 
+    public Task<Customer?> GetByIdReadAsync(int id)
+    {
+        return _db.Customers
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == id);
+    }
+
     public Task<Customer?> GetByUserIdAsync(int userId)
     {
         return _db.Customers.FirstOrDefaultAsync(c => c.UserId == userId);
+    }
+
+    public Task<Customer?> GetByUserIdReadAsync(int userId)
+    {
+        return _db.Customers
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.UserId == userId);
     }
 
     public Task<bool> UserIdExistsAsync(int userId)

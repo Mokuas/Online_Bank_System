@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using ProfilesService.Application.Dtos.Customers;
+using ProfilesService.Application.Validation.Common;
 
 namespace ProfilesService.Application.Validation.Customers
 {

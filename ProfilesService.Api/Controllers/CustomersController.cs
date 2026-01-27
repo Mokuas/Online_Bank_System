@@ -22,7 +22,7 @@ namespace ProfilesService.Api.Controllers
             var result = await _customerService.CreateAsync(request);
 
             if (!result.IsSuccess || result.Value is null)
-                return MapError(result.Error!);
+                return result.Error!.ToActionResult(this);
 
             return CreatedAtAction(nameof(GetById), new { id = result.Value.Id }, result.Value);
         }
@@ -34,7 +34,7 @@ namespace ProfilesService.Api.Controllers
             var result = await _customerService.GetMeAsync();
 
             if (!result.IsSuccess || result.Value is null)
-                return MapError(result.Error!);
+                return result.Error!.ToActionResult(this);
 
             return Ok(result.Value);
         }
@@ -46,7 +46,7 @@ namespace ProfilesService.Api.Controllers
             var result = await _customerService.GetByIdAsync(id);
 
             if (!result.IsSuccess || result.Value is null)
-                return MapError(result.Error!);
+                return result.Error!.ToActionResult(this);
 
             return Ok(result.Value);
         }
@@ -58,7 +58,7 @@ namespace ProfilesService.Api.Controllers
             var result = await _customerService.UpdateAsync(id, request);
 
             if (!result.IsSuccess || result.Value is null)
-                return MapError(result.Error!);
+                return result.Error!.ToActionResult(this);
 
             return Ok(result.Value);
         }
@@ -70,7 +70,7 @@ namespace ProfilesService.Api.Controllers
             var result = await _customerService.GetByKycStatusAsync(kycStatus);
 
             if (!result.IsSuccess || result.Value is null)
-                return MapError(result.Error!);
+                return result.Error!.ToActionResult(this);
 
             return Ok(result.Value);
         }
@@ -82,24 +82,9 @@ namespace ProfilesService.Api.Controllers
             var result = await _customerService.UpdateKycStatusAsync(id, request);
 
             if (!result.IsSuccess || result.Value is null)
-                return MapError(result.Error!);
+                return result.Error!.ToActionResult(this);
 
             return Ok(result.Value);
-        }
-
-        private IActionResult MapError(Error error)
-        {
-            var body = new ApiErrorResponse(error.Code, error.Message);
-
-            return error.Code switch
-            {
-                ErrorCodes.Unauthorized => Unauthorized(body),
-                ErrorCodes.Forbidden => StatusCode(StatusCodes.Status403Forbidden, body),
-                ErrorCodes.NotFound => NotFound(body),
-                ErrorCodes.AlreadyExists => BadRequest(body),
-                ErrorCodes.InvalidKycStatus => BadRequest(body),
-                _ => BadRequest(body)
-            };
         }
     }
 }

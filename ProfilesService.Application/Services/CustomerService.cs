@@ -9,17 +9,13 @@ namespace ProfilesService.Application.Services;
 
 public sealed class CustomerService(ICustomerRepository customers, ICurrentUserService currentUser) : ICustomerService
 {
-
-    private readonly ICustomerRepository _customers = customers;
-    private readonly ICurrentUserService _currentUser = currentUser;
-
     public async Task<Result<CustomerResponse>> CreateAsync(CreateCustomerRequest request)
     {
-        var userId = _currentUser.UserId;
+        var userId = currentUser.UserId;
         if (userId is null)
             return Result<CustomerResponse>.Failure(new Error(ErrorCodes.Unauthorized, "Unauthorized."));
 
-        if (await _customers.UserIdExistsAsync(userId.Value))
+        if (await customers.UserIdExistsAsync(userId.Value))
             return Result<CustomerResponse>.Failure(new Error(ErrorCodes.AlreadyExists, "Customer profile already exists for this user."));
 
         var customer = new Customer
@@ -27,7 +23,7 @@ public sealed class CustomerService(ICustomerRepository customers, ICurrentUserS
             UserId = userId.Value,
             FirstName = request.FirstName.Trim(),
             LastName = request.LastName.Trim(),
-            DateOfBirth = ToDateTime(request.DateOfBirth),
+            DateOfBirth = request.DateOfBirth.ToUtcDateTime(),
             Address = request.Address.Trim(),
             PhoneNumber = request.PhoneNumber.Trim(),
             Email = request.Email.Trim(),
@@ -35,19 +31,19 @@ public sealed class CustomerService(ICustomerRepository customers, ICurrentUserS
             CreatedAt = DateTime.UtcNow
         };
 
-        await _customers.AddAsync(customer);
-        await _customers.SaveChangesAsync();
+        await customers.AddAsync(customer);
+        await customers.SaveChangesAsync();
 
         return Result<CustomerResponse>.Success(ToResponse(customer));
     }
 
     public async Task<Result<CustomerResponse>> GetMeAsync()
     {
-        var userId = _currentUser.UserId;
+        var userId = currentUser.UserId;
         if (userId is null)
             return Result<CustomerResponse>.Failure(new Error(ErrorCodes.Unauthorized, "Unauthorized."));
 
-        var customer = await _customers.GetByUserIdAsync(userId.Value);
+        var customer = await customers.GetByUserIdReadAsync(userId.Value);
         if (customer is null)
             return Result<CustomerResponse>.Failure(new Error(ErrorCodes.NotFound, "Customer profile not found."));
 
@@ -56,7 +52,7 @@ public sealed class CustomerService(ICustomerRepository customers, ICurrentUserS
 
     public async Task<Result<CustomerResponse>> GetByIdAsync(int id)
     {
-        var customer = await _customers.GetByIdAsync(id);
+        var customer = await customers.GetByIdReadAsync(id);
         if (customer is null)
             return Result<CustomerResponse>.Failure(new Error(ErrorCodes.NotFound, "Customer profile not found."));
 
@@ -65,11 +61,11 @@ public sealed class CustomerService(ICustomerRepository customers, ICurrentUserS
 
     public async Task<Result<CustomerResponse>> UpdateAsync(int id, UpdateCustomerRequest request)
     {
-        var userId = _currentUser.UserId;
+        var userId = currentUser.UserId;
         if (userId is null)
             return Result<CustomerResponse>.Failure(new Error(ErrorCodes.Unauthorized, "Unauthorized."));
 
-        var customer = await _customers.GetByIdAsync(id);
+        var customer = await customers.GetByIdAsync(id);
         if (customer is null)
             return Result<CustomerResponse>.Failure(new Error(ErrorCodes.NotFound, "Customer profile not found."));
 
@@ -78,12 +74,12 @@ public sealed class CustomerService(ICustomerRepository customers, ICurrentUserS
 
         customer.FirstName = request.FirstName.Trim();
         customer.LastName = request.LastName.Trim();
-        customer.DateOfBirth = ToDateTime(request.DateOfBirth);
+        customer.DateOfBirth = request.DateOfBirth.ToUtcDateTime();
         customer.Address = request.Address.Trim();
         customer.PhoneNumber = request.PhoneNumber.Trim();
         customer.Email = request.Email.Trim();
 
-        await _customers.SaveChangesAsync();
+        await customers.SaveChangesAsync();
 
         return Result<CustomerResponse>.Success(ToResponse(customer));
     }
@@ -94,8 +90,8 @@ public sealed class CustomerService(ICustomerRepository customers, ICurrentUserS
             return Result<IReadOnlyList<CustomerResponse>>.Failure(
                 new Error(ErrorCodes.Forbidden, "Forbidden."));
 
-        var customers = await _customers.GetByKycStatusAsync(kycStatus);
-        var result = customers.Select(ToResponse).ToList().AsReadOnly();
+        var customerEntities = await customers.GetByKycStatusAsync(kycStatus);
+        var result = customerEntities.Select(ToResponse).ToList().AsReadOnly();
 
         return Result<IReadOnlyList<CustomerResponse>>.Success(result);
     }
@@ -105,20 +101,20 @@ public sealed class CustomerService(ICustomerRepository customers, ICurrentUserS
         if (!IsEmployeeOrAdmin())
             return Result<CustomerResponse>.Failure(new Error(ErrorCodes.Forbidden, "Forbidden."));
 
-        var customer = await _customers.GetByIdAsync(id);
+        var customer = await customers.GetByIdAsync(id);
         if (customer is null)
             return Result<CustomerResponse>.Failure(new Error(ErrorCodes.NotFound, "Customer profile not found."));
 
         customer.KycStatus = request.KycStatus;
 
-        await _customers.SaveChangesAsync();
+        await customers.SaveChangesAsync();
 
         return Result<CustomerResponse>.Success(ToResponse(customer));
     }
 
     private bool CanAccessCustomer(Customer customer)
     {
-        var userId = _currentUser.UserId;
+        var userId = currentUser.UserId;
         if (userId is not null && customer.UserId == userId.Value)
             return true;
 
@@ -127,7 +123,7 @@ public sealed class CustomerService(ICustomerRepository customers, ICurrentUserS
 
     private bool IsEmployeeOrAdmin()
     {
-        var role = _currentUser.Role;
+        var role = currentUser.Role;
         return string.Equals(role, "Employee", StringComparison.OrdinalIgnoreCase)
                || string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase);
     }
@@ -145,7 +141,4 @@ public sealed class CustomerService(ICustomerRepository customers, ICurrentUserS
             KycStatus: c.KycStatus,
             CreatedAt: c.CreatedAt
         );
-
-    private static DateTime ToDateTime(DateOnly date)
-        => date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
 }
