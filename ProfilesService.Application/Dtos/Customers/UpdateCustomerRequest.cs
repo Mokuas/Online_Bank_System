@@ -1,10 +1,10 @@
-﻿namespace ProfilesService.Application.Dtos.Customers;
-
-public sealed record UpdateCustomerRequest(
+﻿namespace ProfilesService.Application.Dtos.Customers
+{
+    public sealed record UpdateCustomerRequest(
     string FirstName,
     string LastName,
     DateOnly DateOfBirth,
     string Address,
     string PhoneNumber,
-    string Email
-);
+    string Email);
+}
