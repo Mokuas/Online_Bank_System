@@ -1,4 +1,5 @@
-﻿using ProfilesService.Application.Common;
+﻿using MapsterMapper;
+using ProfilesService.Application.Common;
 using ProfilesService.Application.Dtos.Customers;
 using ProfilesService.Application.Repositories;
 using ProfilesService.Application.Security;
@@ -7,7 +8,7 @@ using ProfilesService.Domain.Enums;
 
 namespace ProfilesService.Application.Services
 {
-    public sealed class CustomerService(ICustomerRepository customers, ICurrentUserService currentUser) : ICustomerService
+    public sealed class CustomerService(ICustomerRepository customers, ICurrentUserService currentUser, IMapper mapper) : ICustomerService
     {
         public async Task<Result<CustomerResponse>> CreateAsync(CreateCustomerRequest request)
         {
@@ -34,7 +35,7 @@ namespace ProfilesService.Application.Services
             await customers.AddAsync(customer);
             await customers.SaveChangesAsync();
 
-            return Result<CustomerResponse>.Success(ToResponse(customer));
+            return Result<CustomerResponse>.Success(mapper.Map<CustomerResponse>(customer));
         }
 
         public async Task<Result<CustomerResponse>> GetMeAsync()
@@ -47,7 +48,8 @@ namespace ProfilesService.Application.Services
             if (customer is null)
                 return Result<CustomerResponse>.Failure(new Error(ErrorCodes.NotFound, "Customer profile not found."));
 
-            return Result<CustomerResponse>.Success(ToResponse(customer));
+            return Result<CustomerResponse>.Success(
+                mapper.Map<CustomerResponse>(customer));
         }
 
         public async Task<Result<CustomerResponse>> GetByIdAsync(int id)
@@ -56,7 +58,8 @@ namespace ProfilesService.Application.Services
             if (customer is null)
                 return Result<CustomerResponse>.Failure(new Error(ErrorCodes.NotFound, "Customer profile not found."));
 
-            return Result<CustomerResponse>.Success(ToResponse(customer));
+            return Result<CustomerResponse>.Success(
+                mapper.Map<CustomerResponse>(customer));
         }
 
         public async Task<Result<CustomerResponse>> UpdateAsync(int id, UpdateCustomerRequest request)
@@ -81,7 +84,8 @@ namespace ProfilesService.Application.Services
 
             await customers.SaveChangesAsync();
 
-            return Result<CustomerResponse>.Success(ToResponse(customer));
+            return Result<CustomerResponse>.Success(
+                mapper.Map<CustomerResponse>(customer));
         }
 
         public async Task<Result<IReadOnlyList<CustomerResponse>>> GetByKycStatusAsync(KycStatus kycStatus)
@@ -91,7 +95,10 @@ namespace ProfilesService.Application.Services
                     new Error(ErrorCodes.Forbidden, "Forbidden."));
 
             var customerEntities = await customers.GetByKycStatusAsync(kycStatus);
-            var result = customerEntities.Select(ToResponse).ToList().AsReadOnly();
+            var result = customerEntities
+                .Select(c => mapper.Map<CustomerResponse>(c))
+                .ToList()
+                .AsReadOnly();
 
             return Result<IReadOnlyList<CustomerResponse>>.Success(result);
         }
@@ -109,7 +116,8 @@ namespace ProfilesService.Application.Services
 
             await customers.SaveChangesAsync();
 
-            return Result<CustomerResponse>.Success(ToResponse(customer));
+            return Result<CustomerResponse>.Success(
+                mapper.Map<CustomerResponse>(customer));
         }
 
         private bool CanAccessCustomer(Customer customer)
@@ -127,19 +135,5 @@ namespace ProfilesService.Application.Services
             return string.Equals(role, "Employee", StringComparison.OrdinalIgnoreCase)
                    || string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase);
         }
-
-        private static CustomerResponse ToResponse(Customer c)
-            => new(
-                Id: c.Id,
-                UserId: c.UserId,
-                FirstName: c.FirstName,
-                LastName: c.LastName,
-                DateOfBirth: DateOnly.FromDateTime(c.DateOfBirth),
-                Address: c.Address,
-                PhoneNumber: c.PhoneNumber,
-                Email: c.Email,
-                KycStatus: c.KycStatus,
-                CreatedAt: c.CreatedAt
-            );
     }
 }

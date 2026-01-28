@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProfilesService.Domain.Entities;
+using ProfilesService.Application.Common;
 
 namespace ProfilesService.Infrastructure.Data
 {
@@ -21,23 +22,23 @@ namespace ProfilesService.Infrastructure.Data
 
                 entity.Property(c => c.FirstName)
                     .IsRequired()
-                    .HasMaxLength(100);
+                    .HasMaxLength(FieldConstraints.NameMaxLength);
 
                 entity.Property(c => c.LastName)
                     .IsRequired()
-                    .HasMaxLength(100);
+                    .HasMaxLength(FieldConstraints.NameMaxLength);
 
                 entity.Property(c => c.Address)
                     .IsRequired()
-                    .HasMaxLength(250);
+                    .HasMaxLength(FieldConstraints.AddressMaxLength);
 
                 entity.Property(c => c.PhoneNumber)
                     .IsRequired()
-                    .HasMaxLength(20);
+                    .HasMaxLength(FieldConstraints.PhoneNumberMaxLength);
 
                 entity.Property(c => c.Email)
                     .IsRequired()
-                    .HasMaxLength(200);
+                    .HasMaxLength(FieldConstraints.EmailMaxLength);
 
                 entity.Property(c => c.DateOfBirth)
                     .IsRequired();

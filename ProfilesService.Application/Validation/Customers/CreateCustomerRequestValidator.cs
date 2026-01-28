@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using ProfilesService.Application.Dtos.Customers;
 using ProfilesService.Application.Validation.Common;
+using ProfilesService.Application.Common;
 
 namespace ProfilesService.Application.Validation.Customers
 {
@@ -10,20 +11,20 @@ namespace ProfilesService.Application.Validation.Customers
         {
             RuleFor(x => x.FirstName)
                 .NotEmpty().WithMessage("FirstName is required.")
-                .MaximumLength(100);
+                .MaximumLength(FieldConstraints.NameMaxLength);
 
             RuleFor(x => x.LastName)
                 .NotEmpty().WithMessage("LastName is required.")
-                .MaximumLength(100);
+                .MaximumLength(FieldConstraints.NameMaxLength);
 
             RuleFor(x => x.Address)
                 .NotEmpty().WithMessage("Address is required.")
-                .MaximumLength(250);
+                .MaximumLength(FieldConstraints.AddressMaxLength);
 
             RuleFor(x => x.Email)
                 .NotEmpty().WithMessage("Email is required.")
                 .EmailAddress().WithMessage("Email format is invalid.")
-                .MaximumLength(200);
+                .MaximumLength(FieldConstraints.EmailMaxLength);
 
             RuleFor(x => x.PhoneNumber)
                 .ValidPhoneNumber();

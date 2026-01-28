@@ -1,11 +1,14 @@
 ﻿using FluentValidation;
 using FluentValidation.AspNetCore;
+using Mapster;
+using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ProfilesService.Api.Errors;
 using ProfilesService.Api.Security;
+using ProfilesService.Application.Mapper;
 using ProfilesService.Application.Repositories;
 using ProfilesService.Application.Security;
 using ProfilesService.Application.Services;
@@ -14,7 +17,6 @@ using ProfilesService.Infrastructure.Data;
 using ProfilesService.Infrastructure.Repositories;
 using System.Security.Claims;
 using System.Text;
-
 
 namespace ProfilesService.Api.DependencyInjection
 {
@@ -53,6 +55,11 @@ namespace ProfilesService.Api.DependencyInjection
         {
             services.AddFluentValidationAutoValidation();
             services.AddValidatorsFromAssemblyContaining<CreateCustomerRequestValidator>();
+            services.AddSingleton(TypeAdapterConfig.GlobalSettings);
+            services.AddScoped<IMapper, ServiceMapper>();
+
+            TypeAdapterConfig.GlobalSettings.Scan(
+                typeof(CustomerMappingConfig).Assembly);
 
             services.AddScoped<ICustomerService, CustomerService>();
 
