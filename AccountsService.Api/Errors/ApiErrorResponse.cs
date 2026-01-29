@@ -1,0 +1,7 @@
+﻿namespace AccountsService.Api.Errors
+{
+    public sealed record ApiErrorResponse(
+    string Code,
+    string Message,
+    IReadOnlyDictionary<string, string[]>? Errors = null);
+}
