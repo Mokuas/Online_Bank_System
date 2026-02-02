@@ -1,0 +1,20 @@
+<Solution>
+  <Folder Name="/AccountService/">
+    <Project Path="AccountsService.Api/AccountsService.Api.csproj" />
+    <Project Path="AccountsService.Application/AccountsService.Application.csproj" />
+    <Project Path="AccountsService.Domain/AccountsService.Domain.csproj" />
+    <Project Path="AccountsService.Infrastructure/AccountsService.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/AuthService/">
+    <Project Path="OnlineBank.Auth.Api/OnlineBank.Auth.Api.csproj" />
+    <Project Path="OnlineBank.Auth.Application/OnlineBank.Auth.Application.csproj" />
+    <Project Path="OnlineBank.Auth.Domain/OnlineBank.Auth.Domain.csproj" />
+    <Project Path="OnlineBank.Auth.Infrastructure/OnlineBank.Auth.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/ProfileService/">
+    <Project Path="ProfilesService.Api/ProfilesService.Api.csproj" />
+    <Project Path="ProfilesService.Application/ProfilesService.Application.csproj" />
+    <Project Path="ProfilesService.Domain/ProfilesService.Domain.csproj" />
+    <Project Path="ProfilesService.Infrastructure/ProfilesService.Infrastructure.csproj" />
+  </Folder>
+</Solution>
