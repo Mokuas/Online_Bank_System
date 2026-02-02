@@ -16,10 +16,7 @@ public sealed class AccountsController(IAccountService accountService) : Control
     {
         var result = await accountService.OpenAsync(request);
 
-        if (!result.IsSuccess || result.Value is null)
-            return result.Error!.ToActionResult(this);
-
-        return Ok(result.Value);
+        return result.ToActionResult(this);
     }
 
     [Authorize]
@@ -28,10 +25,7 @@ public sealed class AccountsController(IAccountService accountService) : Control
     {
         var result = await accountService.GetMeAsync();
 
-        if (!result.IsSuccess || result.Value is null)
-            return result.Error!.ToActionResult(this);
-
-        return Ok(result.Value);
+        return result.ToActionResult(this);
     }
 
     [Authorize]
@@ -40,10 +34,7 @@ public sealed class AccountsController(IAccountService accountService) : Control
     {
         var result = await accountService.GetByIdAsync(id);
 
-        if (!result.IsSuccess || result.Value is null)
-            return result.Error!.ToActionResult(this);
-
-        return Ok(result.Value);
+        return result.ToActionResult(this);
     }
 
     [Authorize(Roles = "Employee,Admin")]
@@ -52,10 +43,7 @@ public sealed class AccountsController(IAccountService accountService) : Control
     {
         var result = await accountService.GetByCustomerIdAsync(customerId);
 
-        if (!result.IsSuccess || result.Value is null)
-            return result.Error!.ToActionResult(this);
-
-        return Ok(result.Value);
+        return result.ToActionResult(this);
     }
 
     [Authorize(Roles = "Employee,Admin")]
@@ -66,10 +54,7 @@ public sealed class AccountsController(IAccountService accountService) : Control
     {
         var result = await accountService.ChangeStatusAsync(id, request);
 
-        if (!result.IsSuccess || result.Value is null)
-            return result.Error!.ToActionResult(this);
-
-        return Ok(result.Value);
+        return result.ToActionResult(this);
     }
 
     [Authorize]
@@ -78,9 +63,6 @@ public sealed class AccountsController(IAccountService accountService) : Control
     {
         var result = await accountService.GetBalanceAsync(id);
 
-        if (!result.IsSuccess || result.Value is null)
-            return result.Error!.ToActionResult(this);
-
-        return Ok(result.Value);
+        return result.ToActionResult(this);
     }
 }
