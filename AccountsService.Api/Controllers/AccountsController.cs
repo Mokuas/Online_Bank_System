@@ -12,36 +12,36 @@ public sealed class AccountsController(IAccountService accountService) : Control
 {
     [Authorize]
     [HttpPost]
-    public async Task<IActionResult> Open([FromBody] OpenAccountRequest request)
+    public async Task<IActionResult> Open([FromBody] OpenAccountRequest request, CancellationToken ct)
     {
-        var result = await accountService.OpenAsync(request);
+        var result = await accountService.OpenAsync(request, ct);
 
         return result.ToActionResult(this);
     }
 
     [Authorize]
     [HttpGet("me")]
-    public async Task<IActionResult> GetMe()
+    public async Task<IActionResult> GetMe(CancellationToken ct)
     {
-        var result = await accountService.GetMeAsync();
+        var result = await accountService.GetMeAsync(ct);
 
         return result.ToActionResult(this);
     }
 
     [Authorize]
     [HttpGet("{id:int}")]
-    public async Task<IActionResult> GetById([FromRoute] int id)
+    public async Task<IActionResult> GetById([FromRoute] int id, CancellationToken ct)
     {
-        var result = await accountService.GetByIdAsync(id);
+        var result = await accountService.GetByIdAsync(id, ct);
 
         return result.ToActionResult(this);
     }
 
     [Authorize(Roles = "Employee,Admin")]
     [HttpGet]
-    public async Task<IActionResult> GetByCustomerId([FromQuery] int customerId)
+    public async Task<IActionResult> GetByCustomerId([FromQuery] int customerId, CancellationToken ct)
     {
-        var result = await accountService.GetByCustomerIdAsync(customerId);
+        var result = await accountService.GetByCustomerIdAsync(customerId, ct);
 
         return result.ToActionResult(this);
     }
@@ -50,18 +50,18 @@ public sealed class AccountsController(IAccountService accountService) : Control
     [HttpPatch("{id:int}/status")]
     public async Task<IActionResult> ChangeStatus(
         [FromRoute] int id,
-        [FromBody] ChangeAccountStatusRequest request)
+        [FromBody] ChangeAccountStatusRequest request, CancellationToken ct)
     {
-        var result = await accountService.ChangeStatusAsync(id, request);
+        var result = await accountService.ChangeStatusAsync(id, request, ct);
 
         return result.ToActionResult(this);
     }
 
     [Authorize]
     [HttpGet("{id:int}/balance")]
-    public async Task<IActionResult> GetBalance([FromRoute] int id)
+    public async Task<IActionResult> GetBalance([FromRoute] int id, CancellationToken ct)
     {
-        var result = await accountService.GetBalanceAsync(id);
+        var result = await accountService.GetBalanceAsync(id, ct);
 
         return result.ToActionResult(this);
     }

@@ -6,11 +6,11 @@ namespace AccountsService.Application.Services
 {
     public interface IAccountService
     {
-        Task<Result<AccountResponse>> OpenAsync(OpenAccountRequest request);
-        Task<Result<IReadOnlyList<AccountResponse>>> GetMeAsync();
-        Task<Result<AccountResponse>> GetByIdAsync(int id);
-        Task<Result<IReadOnlyList<AccountResponse>>> GetByCustomerIdAsync(int customerId);
-        Task<Result<AccountResponse>> ChangeStatusAsync(int id, ChangeAccountStatusRequest request);
-        Task<Result<BalanceResponse>> GetBalanceAsync(int id);
+        Task<Result<AccountResponse>> OpenAsync(OpenAccountRequest request, CancellationToken ct);
+        Task<Result<IReadOnlyList<AccountResponse>>> GetMeAsync(CancellationToken ct);
+        Task<Result<AccountResponse>> GetByIdAsync(int id, CancellationToken ct);
+        Task<Result<IReadOnlyList<AccountResponse>>> GetByCustomerIdAsync(int customerId, CancellationToken ct);
+        Task<Result<AccountResponse>> ChangeStatusAsync(int id, ChangeAccountStatusRequest request, CancellationToken ct);
+        Task<Result<BalanceResponse>> GetBalanceAsync(int id, CancellationToken ct);
     }
 }

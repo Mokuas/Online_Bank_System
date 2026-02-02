@@ -10,7 +10,7 @@ namespace AccountsService.Application.Security
             if (userId is null)
                 return null;
 
-            var map = await maps.GetByUserIdAsync(userId.Value);
+            var map = await maps.GetByUserIdAsync(userId.Value, ct);
             return map?.CustomerId;
         }
     }

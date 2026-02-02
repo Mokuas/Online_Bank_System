@@ -8,25 +8,25 @@ namespace AccountsService.Infrastructure.Repositories
     public sealed class AccountRepository(AccountsDbContext db) : IAccountRepository
     {
 
-        public Task<Account?> GetByIdAsync(int id)
-            => db.Accounts.FirstOrDefaultAsync(a => a.Id == id);
+        public Task<Account?> GetByIdAsync(int id, CancellationToken ct)
+            => db.Accounts.FirstOrDefaultAsync(a => a.Id == id, ct);
 
-        public Task<Account?> GetByIdReadAsync(int id)
-            => db.Accounts.AsNoTracking().FirstOrDefaultAsync(a => a.Id == id);
+        public Task<Account?> GetByIdReadAsync(int id, CancellationToken ct)
+            => db.Accounts.AsNoTracking().FirstOrDefaultAsync(a => a.Id == id, ct);
 
-        public async Task<IReadOnlyList<Account>> GetByCustomerIdAsync(int customerId)
+        public async Task<IReadOnlyList<Account>> GetByCustomerIdAsync(int customerId, CancellationToken ct)
             => await db.Accounts.AsNoTracking()
                 .Where(a => a.CustomerId == customerId)
                 .OrderBy(a => a.Id)
-                .ToListAsync();
+                .ToListAsync(ct);
 
-        public async Task AddAsync(Account account)
-            => await db.Accounts.AddAsync(account);
+        public async Task AddAsync(Account account, CancellationToken ct)
+            => await db.Accounts.AddAsync(account, ct);
 
-        public Task SaveChangesAsync()
-            => db.SaveChangesAsync();
+        public Task SaveChangesAsync(CancellationToken ct)
+            => db.SaveChangesAsync(ct);
 
-        public Task<bool> AccountNumberExistsAsync(string accountNumber)
-            => db.Accounts.AnyAsync(a => a.AccountNumber == accountNumber);
+        public Task<bool> AccountNumberExistsAsync(string accountNumber, CancellationToken ct)
+            => db.Accounts.AnyAsync(a => a.AccountNumber == accountNumber, ct);
     }
 }

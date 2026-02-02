@@ -9,7 +9,7 @@ namespace AccountsService.Application.IntegrationHandlers
     {
         public async Task HandleAsync(CustomerProfileCreated message, CancellationToken ct)
         {
-            var existing = await maps.GetByUserIdAsync(message.UserId);
+            var existing = await maps.GetByUserIdAsync(message.UserId, ct);
             if (existing is not null)
                 return;
 
@@ -20,8 +20,8 @@ namespace AccountsService.Application.IntegrationHandlers
                 CreatedAt = DateTime.UtcNow
             };
 
-            await maps.AddAsync(map);
-            await maps.SaveChangesAsync();
+            await maps.AddAsync(map, ct);
+            await maps.SaveChangesAsync(ct);
         }
     }
 }
