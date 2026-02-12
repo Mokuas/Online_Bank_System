@@ -7,14 +7,10 @@ namespace AccountsService.Api.Security
     {
         private ClaimsPrincipal? User => http.HttpContext?.User;
 
-        public int? UserId
-        {
-            get
-            {
-                var value = User?.FindFirstValue(ClaimTypes.NameIdentifier);
-                return int.TryParse(value, out var id) ? id : null;
-            }
-        }
+        public int? UserId =>
+            int.TryParse(User?.FindFirstValue(ClaimTypes.NameIdentifier), out var id)
+                ? id
+                : null;
 
         public string? Email => User?.FindFirstValue(ClaimTypes.Email);
 

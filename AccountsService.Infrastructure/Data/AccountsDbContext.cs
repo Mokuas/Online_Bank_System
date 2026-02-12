@@ -1,4 +1,5 @@
 ﻿using AccountsService.Domain.Entities;
+using AccountsService.Infrastructure.Data.Entities;
 using AccountsService.Application.Common;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +13,7 @@ namespace AccountsService.Infrastructure.Data
 
         public DbSet<Account> Accounts { get; set; } = null!;
         public DbSet<UserCustomerMap> UserCustomerMaps { get; set; } = null!;
+        public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -62,6 +64,21 @@ namespace AccountsService.Infrastructure.Data
 
                 entity.Property(x => x.CreatedAt)
                     .IsRequired();
+            });
+            modelBuilder.Entity<OutboxMessage>(entity =>
+            {
+                entity.ToTable("OutboxMessages");
+                entity.HasKey(x => x.Id);
+
+                entity.Property(x => x.RoutingKey).IsRequired().HasMaxLength(200);
+                entity.Property(x => x.EventType).IsRequired().HasMaxLength(200);
+                entity.Property(x => x.PayloadJson).IsRequired();
+
+                entity.Property(x => x.OccurredAtUtc).IsRequired();
+                entity.Property(x => x.Attempts).IsRequired();
+
+                entity.HasIndex(x => x.ProcessedAtUtc);
+                entity.HasIndex(x => x.OccurredAtUtc);
             });
         }
     }

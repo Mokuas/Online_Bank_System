@@ -5,12 +5,11 @@ namespace AccountsService.Infrastructure.Messaging
     {
         public const string SectionName = "RabbitMq";
 
-        public string Host { get; init; } = "localhost";
-        public int Port { get; init; } = 5672;
-        public string Username { get; init; } = "guest";
-        public string Password { get; init; } = "guest";
-
-        public string Exchange { get; init; } = "onlinebank";
-        public string Queue { get; init; } = "accounts-service";
+        public string Host { get; init; } = null!;
+        public int Port { get; init; }
+        public string Username { get; init; } = null!;
+        public string Password { get; init; } = null!;
+        public string Exchange { get; init; } = null!;
+        public string Queue { get; init; } = null!;
     }
 }

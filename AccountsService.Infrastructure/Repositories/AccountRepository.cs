@@ -27,6 +27,6 @@ namespace AccountsService.Infrastructure.Repositories
             => db.SaveChangesAsync(ct);
 
         public Task<bool> AccountNumberExistsAsync(string accountNumber, CancellationToken ct)
-            => db.Accounts.AnyAsync(a => a.AccountNumber == accountNumber, ct);
+            => db.Accounts.AsNoTracking().AnyAsync(a => a.AccountNumber == accountNumber, ct);
     }
 }

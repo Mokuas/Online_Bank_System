@@ -1,7 +1,8 @@
 using AccountsService.Api.DependencyInjection;
+using AccountsService.Application.DependencyInjection;
+using AccountsService.Infrastructure.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
-
 builder.Services
     .AddAccountsApi()
     .AddAccountsCurrentUser()

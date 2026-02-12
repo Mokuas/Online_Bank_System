@@ -1,22 +1,24 @@
-﻿using System.Text.Json;
-using AccountsService.Application.IntegrationEvents;
+﻿using AccountsService.Application.IntegrationEvents;
 using AccountsService.Application.Messaging;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace AccountsService.Infrastructure.Messaging
 {
-    public sealed class IntegrationEventDispatcher(IServiceScopeFactory scopeFactory) : IIntegrationEventDispatcher
+    public sealed class IntegrationEventDispatcher(
+        IServiceScopeFactory scopeFactory,
+        ILogger<IntegrationEventDispatcher> logger) : IIntegrationEventDispatcher
     {
         private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
         public async Task DispatchAsync(string routingKey, string json, CancellationToken ct)
         {
-            // One scope per message (DbContext + handlers are scoped)
             using var scope = scopeFactory.CreateScope();
 
             switch (routingKey)
             {
-                case RoutingKeys.CustomerProfileCreated:
+                case Messaging.RoutingKeys.CustomerProfileCreated:
                     {
                         var message = JsonSerializer.Deserialize<CustomerProfileCreated>(json, JsonOptions)
                                       ?? throw new InvalidOperationException("Failed to deserialize CustomerProfileCreated.");
@@ -29,9 +31,12 @@ namespace AccountsService.Infrastructure.Messaging
                     }
 
                 default:
-                    // Unknown message → ignore (or throw if you want strictness)
-                    // For training + resilience, ignoring is OK.
-                    return;
+                    logger.LogError(
+                        "Unknown routing key received. RoutingKey={RoutingKey} Payload={Payload}",
+                        routingKey,
+                        json);
+
+                    throw new UnknownRoutingKeyException(routingKey);
             }
         }
     }

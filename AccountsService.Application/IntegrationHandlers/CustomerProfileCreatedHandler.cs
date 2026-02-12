@@ -9,18 +9,11 @@ namespace AccountsService.Application.IntegrationHandlers
     {
         public async Task HandleAsync(CustomerProfileCreated message, CancellationToken ct)
         {
-            var existing = await maps.GetByUserIdAsync(message.UserId, ct);
-            if (existing is not null)
+            var existingCustomerId = await maps.GetCustomerIdByUserIdAsync(message.UserId, ct);
+            if (existingCustomerId is not null)
                 return;
 
-            var map = new UserCustomerMap
-            {
-                UserId = message.UserId,
-                CustomerId = message.CustomerId,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            await maps.AddAsync(map, ct);
+            await maps.AddAsync(message.UserId, message.CustomerId, ct);
             await maps.SaveChangesAsync(ct);
         }
     }

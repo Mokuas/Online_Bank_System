@@ -7,7 +7,7 @@ namespace AccountsService.Infrastructure.Data
     public sealed class AccountsDbContextFactory : IDesignTimeDbContextFactory<AccountsDbContext>
     {
         public AccountsDbContext CreateDbContext(string[] args)
-        {
+        {    
             var basePath = Path.Combine(Directory.GetCurrentDirectory(), "..", "AccountsService.Api");
 
             var configuration = new ConfigurationBuilder()

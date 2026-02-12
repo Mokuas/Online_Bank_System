@@ -11,7 +11,14 @@ using System.Security.Cryptography;
 
 namespace AccountsService.Application.Services
 {
-    public sealed class AccountService(IAccountRepository accounts, ICurrentUserService currentUser, ICustomerIdResolver customerIdResolver, IEventBus eventBus,IMapper mapper) : IAccountService
+    public sealed class AccountService(
+    IAccountRepository accounts,
+    IAccountQueries accountQueries,
+    ICurrentUserService currentUser,
+    ICustomerIdResolver customerIdResolver,
+    IIntegrationEventPublisher publisher,
+    IUnitOfWork unitOfWork,
+    IMapper mapper) : IAccountService
     {
         public async Task<Result<AccountResponse>> OpenAsync(OpenAccountRequest request, CancellationToken  ct)
         {
@@ -49,16 +56,26 @@ namespace AccountsService.Application.Services
                 CreatedAt = DateTime.UtcNow
             };
 
-            await accounts.AddAsync(entity, ct);
-            await accounts.SaveChangesAsync(ct);
+            await using var tx = await unitOfWork.BeginTransactionAsync(ct);
 
-            await eventBus.PublishAsync(
-                 RoutingKeys.AccountCreated,
-                 new AccountCreated(
+            await accounts.AddAsync(entity, ct);
+
+            // Save account first to get entity.Id (identity)
+            await unitOfWork.SaveChangesAsync(ct);
+
+            await publisher.PublishAsync(
+                new AccountCreated(
                     AccountId: entity.Id,
                     CustomerId: entity.CustomerId,
                     AccountNumber: entity.AccountNumber,
-                    Currency: entity.Currency));
+                    Currency: entity.Currency),
+                ct);
+
+            // Persist outbox record in same transaction
+            await unitOfWork.SaveChangesAsync(ct);
+
+            // Commit transaction
+            await tx.CommitAsync(ct);
 
             var response = mapper.Map<AccountResponse>(entity);
             return Result<AccountResponse>.Success(response);
@@ -73,9 +90,7 @@ namespace AccountsService.Application.Services
                     new Error(ErrorCodes.Forbidden, "Customer mapping not found. Please complete your profile first."));
             }
 
-            var items = await accounts.GetByCustomerIdAsync(customerId.Value, ct);
-            var mapped = items.Select(a => mapper.Map<AccountResponse>(a)).ToList().AsReadOnly();
-
+            var mapped = await accountQueries.GetByCustomerIdAsync(customerId.Value, ct);
             return Result<IReadOnlyList<AccountResponse>>.Success(mapped);
         }
 
@@ -86,23 +101,24 @@ namespace AccountsService.Application.Services
                 return Result<AccountResponse>.Failure(new Error(ErrorCodes.NotFound, "Account not found."));
 
             var access = await CheckReadAccessAsync(account, ct);
-
             if (!access.IsSuccess)
                 return Result<AccountResponse>.Failure(access.Error!);
 
-            return Result<AccountResponse>.Success(mapper.Map<AccountResponse>(account));
+            // Now return projected DTO (no tracking, DTO projection)
+            var dto = await accountQueries.GetByIdAsync(id, ct);
+            if (dto is null)
+                return Result<AccountResponse>.Failure(new Error(ErrorCodes.NotFound, "Account not found."));
+
+            return Result<AccountResponse>.Success(dto);
         }
 
         public async Task<Result<IReadOnlyList<AccountResponse>>> GetByCustomerIdAsync(int customerId, CancellationToken ct)
         {
             var role = currentUser.Role;
             if (role is not "Employee" and not "Admin")
-                return Result<IReadOnlyList<AccountResponse>>.Failure(
-                    new Error(ErrorCodes.Forbidden, "Forbidden."));
+                return Result<IReadOnlyList<AccountResponse>>.Failure(new Error(ErrorCodes.Forbidden, "Forbidden."));
 
-            var items = await accounts.GetByCustomerIdAsync(customerId, ct);
-            var mapped = items.Select(a => mapper.Map<AccountResponse>(a)).ToList().AsReadOnly();
-
+            var mapped = await accountQueries.GetByCustomerIdAsync(customerId, ct);
             return Result<IReadOnlyList<AccountResponse>>.Success(mapped);
         }
 
@@ -126,15 +142,24 @@ namespace AccountsService.Application.Services
             if (request.Status == AccountStatus.Locked && account.Status == AccountStatus.Locked)
                 return Result<AccountResponse>.Failure(new Error(ErrorCodes.BadRequest, "Account is already Locked."));
 
+            await using var tx = await unitOfWork.BeginTransactionAsync(ct);
+
             account.Status = request.Status;
 
-            await accounts.SaveChangesAsync(ct);
+            // Persist status change
+            await unitOfWork.SaveChangesAsync(ct);
 
-            await eventBus.PublishAsync(
-                RoutingKeys.AccountStatusChanged,
+            // Enqueue event to Outbox
+            await publisher.PublishAsync(
                 new AccountStatusChanged(
                     AccountId: account.Id,
-                    Status: account.Status));
+                    Status: account.Status),
+                ct);
+
+            // Persist outbox record
+            await unitOfWork.SaveChangesAsync(ct);
+
+            await tx.CommitAsync(ct);
 
             return Result<AccountResponse>.Success(mapper.Map<AccountResponse>(account));
         }

@@ -33,6 +33,17 @@ namespace AccountsService.Infrastructure.Messaging
                 cancellationToken: ct);
         }
 
+        public async Task<IChannel> CreateChannelAsync(RabbitMqOptions options, CancellationToken ct)
+        {
+            await InitializeAsync(options, ct);
+            if (Connection is null)
+                throw new InvalidOperationException("RabbitMQ connection not initialized.");
+
+            return await Connection.CreateChannelAsync(
+                options: null,
+                cancellationToken: ct);
+        }
+
         public async ValueTask DisposeAsync()
         {
             if (Channel is not null)

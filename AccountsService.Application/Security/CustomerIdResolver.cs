@@ -2,7 +2,7 @@
 
 namespace AccountsService.Application.Security
 {
-    public sealed class CustomerIdResolver(ICurrentUserService currentUser, IUserCustomerMapRepository maps) : ICustomerIdResolver
+    public sealed class CustomerIdResolver(ICurrentUserService currentUser, IUserCustomerMapRepository userCustomerMapRepository) : ICustomerIdResolver
     {
         public async Task<int?> ResolveAsync(CancellationToken ct = default)
         {
@@ -10,8 +10,7 @@ namespace AccountsService.Application.Security
             if (userId is null)
                 return null;
 
-            var map = await maps.GetByUserIdAsync(userId.Value, ct);
-            return map?.CustomerId;
+            return await userCustomerMapRepository.GetCustomerIdByUserIdAsync(userId.Value, ct);
         }
     }
 }

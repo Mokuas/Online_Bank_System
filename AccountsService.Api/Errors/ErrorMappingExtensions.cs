@@ -14,7 +14,7 @@ namespace AccountsService.Api.Errors
                 ErrorCodes.Unauthorized => controller.Unauthorized(body),
                 ErrorCodes.Forbidden => controller.StatusCode(StatusCodes.Status403Forbidden, body),
                 ErrorCodes.NotFound => controller.NotFound(body),
-                ErrorCodes.AlreadyExists => controller.BadRequest(body),
+                ErrorCodes.AlreadyExists => controller.Conflict(body),
                 _ => controller.BadRequest(body)
             };
         }

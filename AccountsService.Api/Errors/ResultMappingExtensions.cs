@@ -10,7 +10,8 @@ namespace AccountsService.Api.Errors
             ControllerBase controller)
         {
             if (!result.IsSuccess || result.Value is null)
-                return result.Error!.ToActionResult(controller);
+                return (result.Error ?? new Error(ErrorCodes.BadRequest, "Unknown error."))
+                    .ToActionResult(controller);
 
             return controller.Ok(result.Value);
         }
@@ -21,7 +22,8 @@ namespace AccountsService.Api.Errors
             Func<T, IActionResult> onSuccess)
         {
             if (!result.IsSuccess || result.Value is null)
-                return result.Error!.ToActionResult(controller);
+                return (result.Error ?? new Error(ErrorCodes.BadRequest, "Unknown error."))
+                    .ToActionResult(controller);
 
             return onSuccess(result.Value);
         }

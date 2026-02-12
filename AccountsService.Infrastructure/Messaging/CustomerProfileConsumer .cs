@@ -46,7 +46,7 @@ namespace AccountsService.Infrastructure.Messaging
 
                 await Channel.BasicAckAsync(deliveryTag, multiple: false, _stoppingToken);
             }
-            catch (OperationCanceledException)when(_stoppingToken.IsCancellationRequested)
+            catch (OperationCanceledException) when (_stoppingToken.IsCancellationRequested || cancellationToken.IsCancellationRequested)
             {
                 return;
             }
@@ -56,11 +56,6 @@ namespace AccountsService.Infrastructure.Messaging
                     "Error handling RabbitMQ message. RoutingKey={RoutingKey}",
                     routingKey);
 
-                await Channel.BasicNackAsync(
-                    deliveryTag,
-                    multiple: false,
-                    requeue: true,
-                    _stoppingToken);
                 var poison = IsPoisonMessage(ex);
 
                 _logger.LogError(ex,
@@ -83,10 +78,13 @@ namespace AccountsService.Infrastructure.Messaging
           if (ex is JsonException or NotSupportedException or FormatException)
               return true;
 
-          // dispatcher throws InvalidOperationException when deserialization fails.
-          // Treat that as poison too.
-          if (ex is InvalidOperationException)
+          if (ex is UnknownRoutingKeyException)
               return true;
+
+            // dispatcher throws InvalidOperationException when deserialization fails.
+            // Treat that as poison too.
+          if (ex is InvalidOperationException)
+            return true;
 
           return false; // default: assume transient
       }

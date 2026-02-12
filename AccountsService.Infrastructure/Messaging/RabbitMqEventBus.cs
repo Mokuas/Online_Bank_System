@@ -6,51 +6,25 @@ using System.Text.Json;
 
 namespace AccountsService.Infrastructure.Messaging
 {
-    public sealed class RabbitMqEventBus : IEventBus, IAsyncDisposable
+    public sealed class RabbitMqEventBus : IEventBus
     {
         private readonly RabbitMqOptions _options;
-        private readonly IConnection _connection;
-        private readonly IChannel _channel;
+        private readonly RabbitMqConnectionProvider _provider;
 
-        public RabbitMqEventBus(IOptions<RabbitMqOptions> options)
+        public RabbitMqEventBus(
+            RabbitMqConnectionProvider provider,
+            IOptions<RabbitMqOptions> options)
         {
+            _provider = provider;
             _options = options.Value;
-
-            var factory = new ConnectionFactory
-            {
-                HostName = _options.Host,
-                Port = _options.Port,
-                UserName = _options.Username,
-                Password = _options.Password,
-                AutomaticRecoveryEnabled = true,
-                NetworkRecoveryInterval = TimeSpan.FromSeconds(5)
-            };
-
-            // v7 async-first connection/channel (sync-bridged ONLY in ctor)
-            _connection = factory
-                .CreateConnectionAsync()
-                .GetAwaiter()
-                .GetResult();
-
-            _channel = _connection
-                .CreateChannelAsync()
-                .GetAwaiter()
-                .GetResult();
-
-            _channel.ExchangeDeclareAsync(
-                exchange: _options.Exchange,
-                type: ExchangeType.Topic,
-                durable: true,
-                autoDelete: false)
-                .GetAwaiter()
-                .GetResult();
         }
 
-        public async Task PublishAsync<T>(
-            string routingKey,
-            T message,
-            CancellationToken ct = default)
+        public async Task PublishAsync<T>(string routingKey, T message, CancellationToken ct = default)
         {
+            await _provider.InitializeAsync(_options, ct);
+
+            var channel = _provider.Channel ?? throw new InvalidOperationException("RabbitMQ channel not initialized.");
+
             var json = JsonSerializer.Serialize(message);
             var body = Encoding.UTF8.GetBytes(json);
 
@@ -60,29 +34,13 @@ namespace AccountsService.Infrastructure.Messaging
                 DeliveryMode = DeliveryModes.Persistent
             };
 
-            await _channel.BasicPublishAsync(
+            await channel.BasicPublishAsync(
                 exchange: _options.Exchange,
                 routingKey: routingKey,
                 mandatory: false,
                 basicProperties: properties,
                 body: body,
                 cancellationToken: ct);
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            try
-            {
-                if (_channel is not null)
-                    await _channel.CloseAsync();
-
-                if (_connection is not null)
-                    await _connection.CloseAsync();
-            }
-            catch
-            {
-                // ignore shutdown exceptions
-            }
         }
     }
 }
